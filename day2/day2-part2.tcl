@@ -1,4 +1,6 @@
-package require Tcl 9
+# Day 2 Part 2 of the Advent of Code 2025
+
+package require Tcl 9.0-
 namespace eval aoc {}
 proc readfile {name} {
 	set f [open $name]

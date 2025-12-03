@@ -1,4 +1,6 @@
-package require Tcl 9
+# Day 3 Part 2 of the Advent of Code 2025
+
+package require Tcl 9.0-
 proc readfile {name} {
 	set f [open $name]
 	try {read $f} finally {close $f}
@@ -27,8 +29,8 @@ proc max-joltage-battery {batteries {select 12}} {
 }
 
 # Trivial lifting operation
-proc max-joltage-bank {bank} {
+proc sum-max-joltages-bank {bank} {
 	tcl::mathop::+ {*}[lmap batt $bank {max-joltage-battery $batt}]
 }
 
-puts [max-joltage-bank [readfile [lindex $argv 0]]]
+puts [sum-max-joltages-bank [readfile [lindex $argv 0]]]
