@@ -39,11 +39,10 @@ proc parse-data {contents} {
 			lappend items $line
 		}
 	}
-	return [list $freshRanges $items]
+	return $freshRanges
 }
 
-proc count-fresh {parsed} {
-	lassign $parsed freshRanges items
+proc count-fresh {freshRanges} {
 	# Merge all the ranges; be careful, as adding a range can merge many previously distinct ones
 	set known {}
 	foreach fresh $freshRanges {
@@ -56,6 +55,7 @@ proc count-fresh {parsed} {
 		}
 		lappend known $fresh
 	}
+	# Now there are no overlaps, counting is trivial
 	tcl::mathop::+ {*}[lmap range $known {$range length}]
 }
 
