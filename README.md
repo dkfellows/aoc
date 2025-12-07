@@ -1,6 +1,8 @@
 # Advent of Code 2025... in Tcl!
 This is the code I'm writing as part of the [2025 Advent of Code](https://adventofcode.com/2025).
 
+This mostly requires (at least) Tcl 9.0; the `lseq` command is just too useful for these kinds of little problems. I'm so glad we added it, or I'd have needed to invent it for these.
+
 * [Day 1](day1): **The Password**
 * [Day 2](day2): **The Gift Shop Product IDs**
 * [Day 3](day3): **The Battery Banks**
