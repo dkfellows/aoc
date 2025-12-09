@@ -11,7 +11,7 @@ This mostly requires (at least) Tcl 9.0; the `lseq` command is just too useful f
 * [Day 6](day6): **The Cephalopod Worksheet**
 * [Day 7](day7): **The Tachyon Splitters**
 * [Day 8](day8): **The Christmas Lights**
-* [Day 9](day9): ?
+* [Day 9](day9): **The Cinema Tiles**
 * [Day 10](day10): ?
 * [Day 11](day11): ?
 * [Day 12](day12): ?
