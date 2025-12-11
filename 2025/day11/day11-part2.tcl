@@ -16,7 +16,10 @@ proc parse-data {data} {
 
 # A node is relevant if it is both downstream of a source and upstream of a target
 proc relevant-subset {states source target} {
-	dict set downstream $source 1
+	array default set downstream 0
+	array default set upstream 0
+
+	set downstream($source) 1
 	set this $source
 	while {[llength $this]} {
 		set nextlayer {}
@@ -26,15 +29,15 @@ proc relevant-subset {states source target} {
 		}
 		set nextlayer [lsort -unique $nextlayer]
 		foreach next $nextlayer {
-			dict set downstream $next 1
+			set downstream($next) 1
 		}
 		set this $nextlayer
 	}
 
-	# invert
+	# invert the flow
 	dict for {from to} $states {foreach to $to {dict lappend backward $to $from}}
 
-	dict set upstream $target 1
+	set upstream($target) 1
 	set this $target
 	while {[llength $this]} {
 		set nextlayer {}
@@ -44,39 +47,36 @@ proc relevant-subset {states source target} {
 		}
 		set nextlayer [lsort -unique $nextlayer]
 		foreach next $nextlayer {
-			dict set upstream $next 1
+			set upstream($next) 1
 		}
 		set this $nextlayer
 	}
 
-	set relevant {}
-	dict for {from to} $states {
-		if {[dict exists $downstream $from] && [dict exists $upstream $from]} {
-			dict set relevant $from $to
-		}
+	# Remove all entries not both downstream and upstream marked
+	dict map {from to} $states {
+		if {!$downstream($from) || !$upstream($from)} continue
+		set to
 	}
-
-	return $relevant
 }
 
 # Classic graph follower for a NON-LOOPING graph
 proc follow-paths {states path target} {
-	global cache
+	global cache; # Memoisation cache; assume one fundamental graph per run
 	set count 0
-	foreach next [dict getdef $states [lindex $path end] {}] {
+	set me [lindex $path end]
+	if {[info exists cache($me,$target)]} {
+		return $cache($me,$target)
+	}
+	foreach next [dict getdef $states $me {}] {
 		set path1 $path
 		lappend path1 $next
-		if {[info exists cache($next,$target)]} {
-			incr count $cache($next,$target)
-			continue
-		}
 		if {$next eq $target} {
 			incr count
 		} else {
 			incr count [follow-paths $states $path1 $target]
 		}
 	}
-	return [set cache([lindex $path end],$target) $count]
+	return [set cache($me,$target) $count]
 }
 
 proc problem {states {print 0}} {
