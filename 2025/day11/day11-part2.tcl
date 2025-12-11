@@ -49,6 +49,7 @@ proc relevant-subset {states source target} {
 		set this $nextlayer
 	}
 
+	set relevant {}
 	dict for {from to} $states {
 		if {[dict exists $downstream $from] && [dict exists $upstream $from]} {
 			dict set relevant $from $to
@@ -60,20 +61,26 @@ proc relevant-subset {states source target} {
 
 # Classic graph follower for a NON-LOOPING graph
 proc follow-paths {states path target} {
+	global cache
 	set count 0
 	foreach next [dict getdef $states [lindex $path end] {}] {
 		set path1 $path
 		lappend path1 $next
+		if {[info exists cache($next,$target)]} {
+			incr count $cache($next,$target)
+			continue
+		}
 		if {$next eq $target} {
 			incr count
 		} else {
 			incr count [follow-paths $states $path1 $target]
 		}
 	}
-	return $count
+	return [set cache([lindex $path end],$target) $count]
 }
 
 proc problem {states {print 0}} {
+	# NB: dac is strictly after fft; [relevant-subset $states dac fft] is empty
 	set rel [relevant-subset $states dac out]
 	if {$print} {puts rel:[dict size $rel]}
 	set dacout [follow-paths $rel dac out]
