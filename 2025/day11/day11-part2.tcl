@@ -80,20 +80,27 @@ proc follow-paths {states path target} {
 }
 
 proc problem {states {print 0}} {
-	# NB: dac is strictly after fft; [relevant-subset $states dac fft] is empty
 	set rel [relevant-subset $states dac out]
-	if {$print} {puts rel:[dict size $rel]}
 	set dacout [follow-paths $rel dac out]
-	if {$print} {puts "dac-out: $dacout"}
+	if {$print} {puts "dac-out: [dict size $rel] -> $dacout"}
 	set rel [relevant-subset $states fft dac]
-	if {$print} {puts rel:[dict size $rel]}
 	set fftdac [follow-paths $rel fft dac]
-	if {$print} {puts "fft-dac: $fftdac"}
+	if {$print} {puts "fft-dac: [dict size $rel] -> $fftdac"}
 	set rel [relevant-subset $states svr fft]
-	if {$print} {puts rel:[dict size $rel]}
 	set svrfft [follow-paths $rel svr fft]
-	if {$print} {puts "svr-fft: $svrfft"}
-	expr {$dacout * $fftdac * $svrfft}
+	if {$print} {puts "svr-fft: [dict size $rel] -> $svrfft"}
+
+	set rel [relevant-subset $states fft out]
+	set fftout [follow-paths $rel fft out]
+	if {$print} {puts "fft-out: [dict size $rel] -> $fftout"}
+	set rel [relevant-subset $states dac fft]
+	set dacfft [follow-paths $rel dac fft]
+	if {$print} {puts "dac-fft: [dict size $rel] -> $dacfft"}
+	set rel [relevant-subset $states svr dac]
+	set svrdac [follow-paths $rel svr dac]
+	if {$print} {puts "svr-dac: [dict size $rel] -> $svrdac"}
+
+	expr {$dacout * $fftdac * $svrfft + $fftout * $dacfft * $svrdac}
 }
 
 puts [problem [parse-data [readfile [lindex $argv 0]]] {*}[lrange $argv 1 end]]
