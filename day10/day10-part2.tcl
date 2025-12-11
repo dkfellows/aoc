@@ -13,52 +13,249 @@ proc parse-data {data} {
 		set schematics [lmap s [lrange $line 1 end-1] {
 			split [string trim $s ()] ,
 		}]
+		set schv [lmap s $schematics {tcl::mathop::| {*}[lmap n $s {expr {1<<$n}}]}]
 		set joltages [split [lindex $line end] ,]
-		list $indicators [string length $indicators] $x $schematics $joltages
+		list $indicators [string length $indicators] $x $schematics $schv $joltages
 	}
 }
 
-proc all-zero {joltages} {
-	foreach j $joltages {
-		if {$j} {return 0}
+#
+# Solver based on https://github.com/RussellDash332/advent-of-code/blob/main/aoc-2025%2FDay-10%2FPython%2Fmain.py
+#
+# I hate writing complex solvers! Elegant pseudo-geometric methods don't work.
+#
+
+# First, some helpers for finding the minimum element of a list according to some auxiliary function
+# including the case where the comparison is by way of an ordered pair.
+
+proc cmp-pair {p1 p2} {
+	lassign $p1 a1 b1
+	lassign $p2 a2 b2
+	expr {
+		$a1 < $a2 || ($a1 == $a2 && $b1 < $b2)
 	}
-	return 1
 }
 
-proc min-count-presses {schematics joltages n current} {
-	if {$current eq $joltages} {return $n}
-	incr n
-	set minn inf
-	set plans {}
-	foreach s $schematics {
-		set c $current
-		foreach idx $s {lset c $idx [expr {[lindex $c $idx] + 1}]}
-		set acceptable 1
-		set dot 0
-		foreach cx $c jx $joltages {
-			incr dot [expr {$jx * $cx}]
-			if {$cx > $jx} {
-				set acceptable 0
+proc select-minimum-pair {values x keyscript} {
+	upvar 1 $x val
+	set min {inf inf}
+	set mindex end
+	foreach val $values i [lseq [llength $values]] {
+		set v [uplevel 1 $keyscript]
+		if {[cmp-pair $v $min]} {
+			set min $v
+			set mindex $i
+		}
+	}
+	return $mindex
+}
+
+proc select-minimum {values x keyscript} {
+	upvar 1 $x val
+	set min inf
+	set mindex end
+	foreach val $values i [lseq [llength $values]] {
+		set v [uplevel 1 $keyscript]
+		if {$v < $min} {
+			set min $v
+			set mindex $i
+		}
+	}
+	return $mindex
+}
+
+set EPS 1e-9
+
+# A simplex solver, as an object for my ease of scope handling.
+oo::class create Simplex {
+	variable A C D B N m n
+
+	method Pivot {r s} {
+		set k [expr {1.0 / [lindex $D $r $s]}]
+		foreach i [lseq [expr {$m + 2}]] {
+			if {$i == $r} {
+				continue
+			}
+			foreach j [lseq [expr {$n + 2}]] {
+				if {$j != $s} {
+					lset D $i $j [expr {
+						[lindex $D $i $j] - [lindex $D $r $j] * [lindex $D $i $s] * $k
+					}]
+				}
+			}
+		}
+		foreach i [lseq [expr {$n + 2}]] {
+			lset D $r $i [expr {[lindex $D $r $i] * $k}]
+		}
+		foreach i [lseq [expr {$m + 2}]] {
+			lset D $i $s [expr {[lindex $D $i $s] * -$k}]
+		}
+		lset D $r $s $k
+		# swap
+		set tmp [lindex $B $r]
+		lset B $r [lindex $N $s]
+		lset N $s $tmp
+	}
+
+	method Find {p} {
+		global EPS
+        while 1 {
+			set s [select-minimum-pair [lseq [expr {$n + 1}]] i {
+				if {!$p && [lindex $N $i] == -1} {
+					continue
+				}
+				list [lindex $D [expr {$m+$p}] $i] [lindex $N $i]
+			}]
+			if {[lindex $D [expr {$m+$p}] $s] > -$EPS} {
+				return 1
+			}
+			set r [select-minimum-pair [lseq $m] i {
+				if {[lindex $D $i $s] <= $EPS} {
+					continue
+				}
+				list [expr {[lindex $D $i end] / double([lindex $D $i $s])}] [lindex $B $i]
+			}]
+			if {$r == -1} {
+				return 0
+			}
+			my Pivot $r $s
+		}
+	}
+
+	constructor {a c} {
+		set A $a
+		set C $c
+		set m [llength $A]
+		set n [expr {[llength [lindex $A 0]] - 1}]
+		set N [list {*}[lseq $n] -1]
+		set B [lseq $n count $m]
+		set D [lmap i [lseq $m] {list {*}[lindex $A $i] -1}]
+		lappend D [list {*}$C 0 0] [lrepeat [expr {$n+2}] 0]
+
+		foreach i [lseq $m] {
+			# swap
+			set tmp [lindex $D $i end-1]
+			lset D $i end-1 [lindex $D $i end]
+			lset D $i end $tmp
+		}
+	}
+
+	method solve {} {
+		global EPS
+		lset D end $n 1
+		set r [select-minimum [lseq $m] i {
+			lindex $D $i end
+		}]
+
+		if {[lindex $D $r end] < -$EPS} {
+			my Pivot $r $n
+			if {![my Find 1] || [lindex $D end end] < -$EPS} {
+				return {-inf {}}
+			}
+		}
+
+		foreach i [lseq $m] {
+			if {[lindex $B $i] == -1} {
+				set k [select-minimum-pair [lseq $n] ii {
+					list [lindex $D $i $ii] [lindex $N $ii]
+				}]
+				my Pivot $i $k
+			}
+		}
+
+		if {![my Find 0]} {
+			return {-inf {}}
+		}
+
+		set x [lrepeat $n 0]
+		foreach i [lseq $m] {
+			if {0 <= [lindex $B $i] && [lindex $B $i] < $n} {
+				lset x [lindex $B $i] [lindex $D $i end]
+			}
+		}
+		return [list [tcl::mathop::+ {*}[lmap cc $C xx $x {expr {$cc*$xx}}]] $x]
+	}
+}
+
+# A simplex solver, as an object for my ease of scope handling.
+# The input to the constructor is a suitably conditioned machine descriptor.
+oo::class create MachineSolver {
+	variable A n bval bsol
+
+	constructor {a} {
+		set A $a
+		set n [expr {[llength [lindex $A 0]] - 1}]
+		set bval inf
+		set bsol {}
+	}
+
+	method Branch a {
+		global EPS
+		set simplex [Simplex new $a [lrepeat $n 1]]
+		lassign [$simplex solve] val x
+		$simplex destroy
+        if {$val+$EPS >= $bval || $val == -inf} {
+			return
+		}
+
+		set k -1
+		set v 0
+		foreach i [lseq [llength $x]] e $x {
+			if {abs($e-round($e)) > $EPS} {
+				set k $i
+				set v [expr {int($e)}]
 				break
 			}
 		}
-		if {!$acceptable} continue
-		set dot [expr {$dot / [tcl::mathop::+ 0.0 {*}$c]}]
-		lappend plans $c $dot
+		if {$k == -1} {
+			if {$val + $EPS < $bval} {
+				set bval $val
+				set bsol [lmap xx $x {tcl::mathfunc::round $xx}]
+			}
+		} else {
+			set s [list {*}[lrepeat $n 0] $v]
+			lset s $k 1
+			my Branch [list {*}$a $s]
+			set s [list {*}[lrepeat $n 0] [expr {~$v}]]
+			lset s $k -1
+			my Branch [list {*}$a $s]
+		}
 	}
-	set plans [lsort -stride 2 -index 1 -real -decreasing $plans]
-	foreach {c -} $plans {
-		set candidate [min-count-presses $schematics $joltages $n $c]
-		# GREEDY!
-		if {$candidate > 0} {return $candidate}
+
+	method solve {} {
+		my Branch $A
+		return [expr {round($bval)}]
 	}
-	return 0
 }
 
+# This handles conditioning the machine descriptor
+proc solve-machine {m} {
+	lassign $m - - - sch p jol
+	set n [llength $jol]
+	set A [lrepeat [expr {2 * $n + [llength $p]}] [lrepeat [expr {[llength $p] + 1}] 0]]
+	foreach i [lseq [llength $p]] {
+		lset A [expr {[llength $A]-$i-1}] $i -1
+		foreach e [lindex $sch $i] {
+			lset A $e $i 1
+			lset A [expr {$e + $n}] $i -1
+		}
+	}
+	foreach i [lseq $n] j $jol {
+		lset A $i end $j
+		lset A [expr {$i + $n}] end [expr {-$j}]
+	}
+	set solver [MachineSolver new $A]
+	try {
+		return [$solver solve]
+	} finally {
+		$solver destroy
+	}
+}
+
+# Extend everything over the whole problem set
 proc problem {machines} {
 	tcl::mathop::+ {*}[lmap m $machines {
-		lassign $m - - - sch jol
-		min-count-presses $sch $jol 0 [lrepeat [llength $jol] 0]
+		solve-machine $m
 	}]
 }
 
