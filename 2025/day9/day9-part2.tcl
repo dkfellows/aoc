@@ -1,12 +1,13 @@
 # Day 9 Part 2 of the Advent of Code 2025
 
 package require Tcl 9-
+namespace eval aoc {}
 proc readfile {name} {
 	set f [open $name]
 	try {read $f} finally {close $f}
 }
 
-proc is-disjoint-segment {rx1 ry1 rx2 ry2 lx1 ly1 lx2 ly2} {
+proc aoc::is-disjoint-segment {rx1 ry1 rx2 ry2 lx1 ly1 lx2 ly2} {
 	# Is rectangle (rx1,ry1),(rx2,ry2) disjoint from line segment (lx1,ly1),(lx2,ly2)?
 	# A line segment being on the edge of the rectangle counts as disjoint.
 
@@ -24,7 +25,7 @@ proc is-disjoint-segment {rx1 ry1 rx2 ry2 lx1 ly1 lx2 ly2} {
 	}
 }
 
-proc is-disjoint {coords x1 y1 x2 y2} {
+proc aoc::is-disjoint {coords x1 y1 x2 y2} {
 	# Is rectangle (x1,y1),(x2,y2) disjoint from all line segments?
 	foreach idx [lseq [llength $coords]] {
 		lassign [lindex $coords $idx] xx1 yy1
@@ -34,7 +35,7 @@ proc is-disjoint {coords x1 y1 x2 y2} {
 	return true
 }
 
-proc max-area {data} {
+proc aoc::max-area {data} {
 	set coords [lmap line [split [string trim $data] \n] {split $line ,}]
 	set max 0
 	foreach a $coords idx [lseq [llength $coords]] {
@@ -52,4 +53,4 @@ proc max-area {data} {
 	return $max
 }
 
-puts [max-area [readfile [lindex $argv 0]]]
+puts [aoc::max-area [readfile [lindex $argv 0]]]

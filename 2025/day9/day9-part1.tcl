@@ -1,12 +1,13 @@
 # Day 9 Part 1 of the Advent of Code 2025
 
 package require Tcl 9-
+namespace eval aoc {}
 proc readfile {name} {
 	set f [open $name]
 	try {read $f} finally {close $f}
 }
 
-proc max-area {data} {
+proc aoc::max-area {data} {
 	set coords [lmap line [split [string trim $data] \n] {split $line ,}]
 	set max 0
 	foreach a $coords {
@@ -20,4 +21,4 @@ proc max-area {data} {
 	return $max
 }
 
-puts [max-area [readfile [lindex $argv 0]]]
+puts [aoc::max-area [readfile [lindex $argv 0]]]

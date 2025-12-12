@@ -1,13 +1,14 @@
 # Day 5 Part 2 of the Advent of Code 2025
 
 package require Tcl 8.6-
+namespace eval aoc {}
 proc readfile {name} {
 	set f [open $name]
 	try {read $f} finally {close $f}
 }
 
 # Easiest to represent ranges as objects
-oo::class create Range {
+oo::class create aoc::Range {
 	variable from to
 	constructor line {
 		scan $line "%lld-%lld" from to
@@ -26,7 +27,7 @@ oo::class create Range {
 	}
 }
 
-proc parse-data {contents} {
+proc aoc::parse-data {contents} {
 	set state 0
 	set freshRanges {}
 	set items {}
@@ -42,7 +43,7 @@ proc parse-data {contents} {
 	return [list $freshRanges $items]
 }
 
-proc count-fresh {parsed} {
+proc aoc::count-fresh {parsed} {
 	lassign $parsed freshRanges items
 	set count 0
 	foreach item $items {
@@ -56,4 +57,4 @@ proc count-fresh {parsed} {
 	return $count
 }
 
-puts [count-fresh [parse-data [readfile [lindex $argv 0]]]]
+puts [aoc::count-fresh [aoc::parse-data [readfile [lindex $argv 0]]]]

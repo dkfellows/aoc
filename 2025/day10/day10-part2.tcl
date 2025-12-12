@@ -1,19 +1,20 @@
 # Day 10 Part 2 of the Advent of Code 2025
 
 package require Tcl 9-
+namespace eval aoc {namespace path tcl::mathop}
 proc readfile {name} {
 	set f [open $name]
 	try {read $f} finally {close $f}
 }
 
-proc parse-data {data} {
+proc aoc::parse-data {data} {
 	lmap line [split [string trim $data] \n] {
 		set indicators [string map {\[ "" \] "" . 0 # 1} [lindex $line 0]]
 		binary scan [binary format B* [format %-032d [string reverse $indicators]]] I x
 		set schematics [lmap s [lrange $line 1 end-1] {
 			split [string trim $s ()] ,
 		}]
-		set schv [lmap s $schematics {tcl::mathop::| {*}[lmap n $s {expr {1<<$n}}]}]
+		set schv [lmap s $schematics {| {*}[lmap n $s {expr {1<<$n}}]}]
 		set joltages [split [lindex $line end] ,]
 		list $indicators [string length $indicators] $x $schematics $schv $joltages
 	}
@@ -28,7 +29,7 @@ proc parse-data {data} {
 # First, some helpers for finding the minimum element of a list according to some auxiliary function
 # including the case where the comparison is by way of an ordered pair.
 
-proc cmp-pair {p1 p2} {
+proc aoc::cmp-pair {p1 p2} {
 	lassign $p1 a1 b1
 	lassign $p2 a2 b2
 	expr {
@@ -36,7 +37,7 @@ proc cmp-pair {p1 p2} {
 	}
 }
 
-proc select-minimum-pair {values x keyscript} {
+proc aoc::select-minimum-pair {values x keyscript} {
 	upvar 1 $x val
 	set min {inf inf}
 	set mindex end
@@ -50,7 +51,7 @@ proc select-minimum-pair {values x keyscript} {
 	return $mindex
 }
 
-proc select-minimum {values x keyscript} {
+proc aoc::select-minimum {values x keyscript} {
 	upvar 1 $x val
 	set min inf
 	set mindex end
@@ -64,10 +65,10 @@ proc select-minimum {values x keyscript} {
 	return $mindex
 }
 
-set EPS 1e-9
+set aoc::EPS 1e-9
 
 # A simplex solver, as an object for my ease of scope handling.
-oo::class create Simplex {
+oo::class create aoc::Simplex {
 	variable A C D B N m n
 
 	method Pivot {r s} {
@@ -98,9 +99,9 @@ oo::class create Simplex {
 	}
 
 	method Find {p} {
-		global EPS
+		global aoc::EPS
         while 1 {
-			set s [select-minimum-pair [lseq [expr {$n + 1}]] i {
+			set s [aoc::select-minimum-pair [lseq [expr {$n + 1}]] i {
 				if {!$p && [lindex $N $i] == -1} {
 					continue
 				}
@@ -109,7 +110,7 @@ oo::class create Simplex {
 			if {[lindex $D [expr {$m+$p}] $s] > -$EPS} {
 				return 1
 			}
-			set r [select-minimum-pair [lseq $m] i {
+			set r [aoc::select-minimum-pair [lseq $m] i {
 				if {[lindex $D $i $s] <= $EPS} {
 					continue
 				}
@@ -141,9 +142,9 @@ oo::class create Simplex {
 	}
 
 	method solve {} {
-		global EPS
+		global aoc::EPS
 		lset D end $n 1
-		set r [select-minimum [lseq $m] i {
+		set r [aoc::select-minimum [lseq $m] i {
 			lindex $D $i end
 		}]
 
@@ -156,7 +157,7 @@ oo::class create Simplex {
 
 		foreach i [lseq $m] {
 			if {[lindex $B $i] == -1} {
-				set k [select-minimum-pair [lseq $n] ii {
+				set k [aoc::select-minimum-pair [lseq $n] ii {
 					list [lindex $D $i $ii] [lindex $N $ii]
 				}]
 				my Pivot $i $k
@@ -179,7 +180,7 @@ oo::class create Simplex {
 
 # A simplex solver, as an object for my ease of scope handling.
 # The input to the constructor is a suitably conditioned machine descriptor.
-oo::class create MachineSolver {
+oo::class create aoc::MachineSolver {
 	variable A n bval bsol
 
 	constructor {a} {
@@ -190,8 +191,8 @@ oo::class create MachineSolver {
 	}
 
 	method Branch a {
-		global EPS
-		set simplex [Simplex new $a [lrepeat $n 1]]
+		global aoc::EPS
+		set simplex [aoc::Simplex new $a [lrepeat $n 1]]
 		lassign [$simplex solve] val x
 		$simplex destroy
         if {$val+$EPS >= $bval || $val == -inf} {
@@ -229,7 +230,7 @@ oo::class create MachineSolver {
 }
 
 # This handles conditioning the machine descriptor
-proc solve-machine {m} {
+proc aoc::solve-machine {m} {
 	lassign $m - - - sch p jol
 	set n [llength $jol]
 	set A [lrepeat [expr {2 * $n + [llength $p]}] [lrepeat [expr {[llength $p] + 1}] 0]]
@@ -253,10 +254,8 @@ proc solve-machine {m} {
 }
 
 # Extend everything over the whole problem set
-proc problem {machines} {
-	tcl::mathop::+ {*}[lmap m $machines {
-		solve-machine $m
-	}]
+proc aoc::problem {machines} {
+	+ {*}[lmap m $machines {solve-machine $m}]
 }
 
-puts [problem [parse-data [readfile [lindex $argv 0]]]]
+puts [aoc::problem [aoc::parse-data [readfile [lindex $argv 0]]]]

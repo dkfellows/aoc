@@ -1,12 +1,13 @@
 # Day 7 Part 1 of the Advent of Code 2025
 
 package require Tcl 9-
+namespace eval aoc {}
 proc readfile {name} {
 	set f [open $name]
 	try {read $f} finally {close $f}
 }
 
-proc beam-splitting-splits {data} {
+proc aoc::beam-splitting-splits {data} {
 	set manifold [lmap line [split [string trim $data] \n] {split $line ""}]
 	# Whether there is a tachyon beam proceeding in a particular column
 	set beams [lrepeat [llength [lindex $manifold 0]] no]
@@ -32,4 +33,4 @@ proc beam-splitting-splits {data} {
 	return $count
 }
 
-puts [beam-splitting-splits [readfile [lindex $argv 0]]]
+puts [aoc::beam-splitting-splits [readfile [lindex $argv 0]]]

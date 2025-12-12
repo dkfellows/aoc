@@ -1,24 +1,25 @@
 # Day 10 Part 1 of the Advent of Code 2025
 
 package require Tcl 9-
+namespace eval aoc {namespace path tcl::mathop}
 proc readfile {name} {
 	set f [open $name]
 	try {read $f} finally {close $f}
 }
 
-proc parse-data {data} {
+proc aoc::parse-data {data} {
 	lmap line [split [string trim $data] \n] {
 		set indicators [string map {\[ "" \] "" . 0 # 1} [lindex $line 0]]
 		binary scan [binary format B* [format %-032d [string reverse $indicators]]] I x
 		set schematics [lmap s [lrange $line 1 end-1] {
-			tcl::mathop::| {*}[lmap n [split [string trim $s ()] ,] {expr {1<<$n}}]
+			| {*}[lmap n [split [string trim $s ()] ,] {expr {1<<$n}}]
 		}]
 		set joltages [split [lindex $line end] ,]
 		list $indicators [string length $indicators] $x $schematics $joltages
 	}
 }
 
-proc pick {n collection {picked {}} {first 0}} {
+proc aoc::pick {n collection {picked {}} {first 0}} {
 	if {$n < 1} {error "bad n: $n"}
 	if {$first >= [llength $collection]} {return {}}
 	if {$n == 1} {
@@ -35,11 +36,11 @@ proc pick {n collection {picked {}} {first 0}} {
 	}
 }
 
-proc min-count-presses {machine} {
+proc aoc::min-count-presses {machine} {
 	lassign $machine is len tot sch jol
 	foreach n [lseq 1 .. [llength $sch]] {
 		foreach set [pick $n $sch] {
-			if {[tcl::mathop::^ {*}$set] == $tot} {
+			if {[^ {*}$set] == $tot} {
 				return $n
 			}
 		}
@@ -47,8 +48,8 @@ proc min-count-presses {machine} {
 	error "none possible: $machine"
 }
 
-proc problem {machines} {
-	tcl::mathop::+ {*}[lmap m $machines {min-count-presses $m}]
+proc aoc::problem {machines} {
+	+ {*}[lmap m [parse-data $machines] {min-count-presses $m}]
 }
 
-puts [problem [parse-data [readfile [lindex $argv 0]]]]
+puts [aoc::problem [readfile [lindex $argv 0]]]

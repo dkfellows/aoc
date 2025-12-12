@@ -1,12 +1,13 @@
 # Day 11 Part 1 of the Advent of Code 2025
 
 package require Tcl 8.6-
+namespace eval aoc {}
 proc readfile {name} {
 	set f [open $name]
 	try {read $f} finally {close $f}
 }
 
-proc parse-data {data} {
+proc aoc::parse-data {data} {
 	foreach line [split [string trim $data] \n] {
 		lassign [split $line :] source destinations
 		dict set states $source [split [string trim $destinations]]
@@ -15,7 +16,7 @@ proc parse-data {data} {
 }
 
 # Classic graph follower for a NON-LOOPING graph
-proc follow-paths {states {path you}} {
+proc aoc::follow-paths {states {path you}} {
 	set count 0
 	foreach next [dict get $states [lindex $path end]] {
 		if {$next eq "out"} {
@@ -29,4 +30,4 @@ proc follow-paths {states {path you}} {
 	return $count
 }
 
-puts [follow-paths [parse-data [readfile [lindex $argv 0]]]]
+puts [aoc::follow-paths [aoc::parse-data [readfile [lindex $argv 0]]]]

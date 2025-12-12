@@ -1,16 +1,17 @@
 # Day 6 Part 2 of the Advent of Code 2025
 
 package require Tcl 9-
+namespace eval aoc {namespace path {tcl::mathop tcl::mathfunc}}
 proc readfile {name} {
 	set f [open $name]
 	try {read $f} finally {close $f}
 }
 
-proc op-cols {data} {
+proc aoc::op-cols {data} {
 	set lines [split [string trim $data \n] \n]
 	set grandTotal 0
 	# Get line length, suspiciously
-	set strlen [tcl::mathfunc::max {*}[lmap line $lines {string length $line}]]
+	set strlen [max {*}[lmap line $lines {string length $line}]]
 	foreach index [lseq $strlen .. 0] {
 		# Pick out the column of characters
 		set column [lmap line $lines {string index $line $index}]
@@ -24,10 +25,10 @@ proc op-cols {data} {
 		set op [string trim [lindex $column end]]
 		# If the op is real, apply it and collect the result
 		if {$op in {+ *}} {
-			incr grandTotal [tcl::mathop::$op {*}$current]
+			incr grandTotal [$op {*}$current]
 		}
 	}
 	return $grandTotal
 }
 
-puts [op-cols [readfile [lindex $argv 0]]]
+puts [aoc::op-cols [readfile [lindex $argv 0]]]

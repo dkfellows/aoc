@@ -1,12 +1,13 @@
 # Day 8 Part 1 of the Advent of Code 2025
 
 package require Tcl 9-
+namespace eval aoc {namespace path tcl::mathop}
 proc readfile {name} {
 	set f [open $name]
 	try {read $f} finally {close $f}
 }
 
-proc circuits {data connectionCount {maxCount 3}} {
+proc aoc::circuits {data connectionCount {maxCount 3}} {
 	set coords [lmap line [split [string trim $data] \n] {split $line ,}]
 
 	# Get the actions we'll be taking in the order we'll do them
@@ -24,7 +25,7 @@ proc circuits {data connectionCount {maxCount 3}} {
 	set groups [lseq [llength $coords]]
 	set uf [lseq [llength $coords]]
 	# Now, make the $connectionCount shortest joins
-	foreach {i j -} [lrange $info 0 [expr {$connectionCount * 3 -1}]] {
+	foreach {i j -} [lrange $info 0 [expr {$connectionCount * 3 - 1}]] {
 		# Which groups are the candidates in?
 		set ufi [lindex $uf $i]
 		set ufj [lindex $uf $j]
@@ -43,7 +44,7 @@ proc circuits {data connectionCount {maxCount 3}} {
 	set sortedGroupLengths [lsort -decreasing -integer [lmap i [lsort -unique -integer $uf] {
 		llength [lindex $groups $i]
 	}]]
-	tcl::mathop::* {*}[lrange $sortedGroupLengths 0 $maxCount-1]
+	* {*}[lrange $sortedGroupLengths 0 $maxCount-1]
 }
 
-puts [circuits [readfile [lindex $argv 0]] [lindex $argv 1]]
+puts [aoc::circuits [readfile [lindex $argv 0]] {*}[lrange $argv 1 end]]

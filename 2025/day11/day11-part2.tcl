@@ -1,12 +1,13 @@
 # Day 11 Part 2 of the Advent of Code 2025
 
 package require Tcl 9-
+namespace eval aoc {}
 proc readfile {name} {
 	set f [open $name]
 	try {read $f} finally {close $f}
 }
 
-proc parse-data {data} {
+proc aoc::parse-data {data} {
 	foreach line [split [string trim $data] \n] {
 		lassign [split $line :] source destinations
 		dict set states $source [split [string trim $destinations]]
@@ -15,7 +16,7 @@ proc parse-data {data} {
 }
 
 # A node is relevant if it is both downstream of a source and upstream of a target
-proc relevant-subset {states source target} {
+proc aoc::relevant-subset {states source target} {
 	array default set downstream 0
 	array default set upstream 0
 
@@ -60,7 +61,7 @@ proc relevant-subset {states source target} {
 }
 
 # Classic graph follower for a NON-LOOPING graph
-proc follow-paths {states path target} {
+proc aoc::follow-paths {states path target} {
 	global cache; # Memoisation cache; assume one fundamental graph per run
 	set count 0
 	set me [lindex $path end]
@@ -79,7 +80,7 @@ proc follow-paths {states path target} {
 	return [set cache($me,$target) $count]
 }
 
-proc problem {states {print 0}} {
+proc aoc::problem {states {print 0}} {
 	set rel [relevant-subset $states dac out]
 	set dacout [follow-paths $rel dac out]
 	if {$print} {puts "dac-out: [dict size $rel] -> $dacout"}
@@ -103,4 +104,4 @@ proc problem {states {print 0}} {
 	expr {$dacout * $fftdac * $svrfft + $fftout * $dacfft * $svrdac}
 }
 
-puts [problem [parse-data [readfile [lindex $argv 0]]] {*}[lrange $argv 1 end]]
+puts [aoc::problem [aoc::parse-data [readfile [lindex $argv 0]]] {*}[lrange $argv 1 end]]
