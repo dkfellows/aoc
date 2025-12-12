@@ -14,7 +14,7 @@ This mostly requires (at least) [Tcl 9.0 (source over here)](https://github.com/
 * [Day 9](2025/day9): **The Cinema Tiles**
 * [Day 10](2025/day10): **The <del>Great Filter</del> Factory Circuits**
 * [Day 11](2025/day11): **The Computer Devices**
-* [Day 12](2025/day12): ?
+* [Day 12](2025/day12): **The Trees! NOT THE TREES!** (Also the presents.)
 
 ## Other years
 There are no previous years. I don't know if I'll ever bother to attempt them.
