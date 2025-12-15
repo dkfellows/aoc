@@ -1,3 +1,6 @@
+# **Gift Shop** _aka_ **The Gift Shop Product IDs**
+Sometimes, we can say "regexps to the rescue!" Not very often, but this time they were the right tool.
+
 Note that _all_ solutions today require Tcl 9.
 ## Code
 * [`day2-part1.tcl` &mdash; The solution to the first part; regexps!](day2-part1.tcl)

@@ -1,4 +1,7 @@
-Note that _all_ solutions today require Tcl 9.
+# **Factory** _aka_ **The <del>Great Filter</del> Factory Circuits**
+I truly loathe ILP challenges! Yes, the problem is simply finding <b>x</b> in <b>Ax</b>&nbsp;=&nbsp;<b>b</b>, but it's difficult and horrible.
+
+Note that _all_ solutions today require Tcl 9. TclOO is used to avoid having to pass a very large number of variables around manually; the instances are actually all very short-lived.
 ## Code
 * [`day10-part1.tcl` &mdash; The solution to the first part; simple XOR combination](day10-part1.tcl)
 * [`day10-part2.tcl` &mdash; The solution to the second part; linear equation solving](day10-part2.tcl)

@@ -1,4 +1,6 @@
+# **Laboratories** _aka_ **The Tachyon Splitters**
 Note that _all_ solutions today require Tcl 9.
+The obvious one-pass algorithm turns out to be exceptionally efficient (depth first searching is _terrible_ for this).
 ## Code
 * [`day7-part1.tcl` &mdash; The solution to the first part; count the splits](day7-part1.tcl)
 * [`day7-part2.tcl` &mdash; The solution to the second part; count the paths](day7-part2.tcl)

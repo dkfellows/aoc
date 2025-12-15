@@ -1,3 +1,5 @@
+# **Secret Entrance** _aka_ **The Password**
+A simple exercise in modular arithmetic.
 ## Code
 * [`day1-part1.tcl` &mdash; The solution to the first part; modular arithmetic](day1-part1.tcl)
 * [`day1-part2.tcl` &mdash; The solution to the second part; literal counting of values](day1-part2.tcl) (because trying to be "smart" runs into awkward edge cases)

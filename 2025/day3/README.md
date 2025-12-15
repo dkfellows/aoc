@@ -1,3 +1,4 @@
+# **Lobby** _aka_ **The Battery Banks**
 Note that _all_ solutions today require Tcl 9.
 ## Code
 * [`day3-part1.tcl` &mdash; The solution to the first part; brute force and ignorance!](day3-part1.tcl)
