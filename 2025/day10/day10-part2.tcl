@@ -36,39 +36,43 @@ proc cmp-pair {p1 p2} {
 	}
 }
 
-proc select-minimum-pair {values x keyscript} {
-	upvar 1 $x val
+proc select-minimum-pair {n *val keyscript} {
+	upvar 1 ${*val} val
 	set min {inf inf}
 	set mindex end
-	foreach val $values i [lseq {[llength $values]}] {
+	foreach val [lseq {$n}] {
 		set v [uplevel 1 $keyscript]
 		if {[cmp-pair $v $min]} {
 			set min $v
-			set mindex $i
+			set mindex $val
 		}
 	}
 	return $mindex
 }
 
-proc select-minimum {values x keyscript} {
-	upvar 1 $x val
+proc select-minimum {n *val keyscript} {
+	upvar 1 ${*val} val
 	set min inf
 	set mindex end
-	foreach val $values i [lseq {[llength $values]}] {
+	foreach val [lseq {$n}] {
 		set v [uplevel 1 $keyscript]
 		if {$v < $min} {
 			set min $v
-			set mindex $i
+			set mindex $val
 		}
 	}
 	return $mindex
 }
 
-set EPS 1e-9
+# An epsilon value, used to make float comparison reliable
+set epsilon 1e-9
+
+# The Simplex and MachineSolver classes exist to make variable scopes more convenient.
+# You could handle them by passing variables around instead, but the code gets annoying!
 
 # A simplex solver, as an object for my ease of scope handling.
 oo::class create Simplex {
-	variable A C D B N m n
+	variable A C D B N m n epsilon
 
 	method Pivot {r s} {
 		set k [expr {1.0 / [lindex $D $r $s]}]
@@ -89,22 +93,22 @@ oo::class create Simplex {
 		set tmp [lindex $B $r]
 		lset B $r [lindex $N $s]
 		lset N $s $tmp
+		return
 	}
 
 	method Find {p} {
-		global EPS
         while 1 {
-			set s [select-minimum-pair [lseq {$n + 1}] i {
+			set s [select-minimum-pair [expr {$n + 1}] i {
 				if {!$p && [lindex $N $i] == -1} {
 					continue
 				}
 				list [lindex $D [expr {$m + $p}] $i] [lindex $N $i]
 			}]
-			if {[lindex $D [expr {$m + $p}] $s] > -$EPS} {
+			if {[lindex $D [expr {$m + $p}] $s] > -$epsilon} {
 				return 1
 			}
-			set r [select-minimum-pair [lseq {$m}] i {
-				if {[set dis [lindex $D $i $s]] <= $EPS} {
+			set r [select-minimum-pair $m i {
+				if {[set dis [lindex $D $i $s]] <= $epsilon} {
 					continue
 				}
 				list [expr {[lindex $D $i end] / double($dis)}] [lindex $B $i]
@@ -117,6 +121,7 @@ oo::class create Simplex {
 	}
 
 	constructor {a c} {
+		set epsilon $::epsilon
 		set A $a
 		set C $c
 		set m [llength $A]
@@ -135,22 +140,19 @@ oo::class create Simplex {
 	}
 
 	method solve {} {
-		global EPS
 		lset D end $n 1
-		set r [select-minimum [lseq {$m}] i {
-			lindex $D $i end
-		}]
+		set r [select-minimum $m i {lindex $D $i end}]
 
-		if {[lindex $D $r end] < -$EPS} {
+		if {[lindex $D $r end] < -$epsilon} {
 			my Pivot $r $n
-			if {![my Find 1] || [lindex $D end end] < -$EPS} {
+			if {![my Find 1] || [lindex $D end end] < -$epsilon} {
 				return {-inf {}}
 			}
 		}
 
 		foreach i [lseq {$m}] {
 			if {[lindex $B $i] == -1} {
-				set k [select-minimum-pair [lseq {$n}] ii {
+				set k [select-minimum-pair $n ii {
 					list [lindex $D $i $ii] [lindex $N $ii]
 				}]
 				my Pivot $i $k
@@ -167,16 +169,19 @@ oo::class create Simplex {
 				lset x [lindex $B $i] [lindex $D $i end]
 			}
 		}
-		return [list [tcl::mathop::+ {*}[lmap cc $C xx $x {expr {$cc * $xx}}]] $x]
+		set result [list [tcl::mathop::+ {*}[lmap cc $C xx $x {expr {$cc * $xx}}]] $x]
+		[self] destroy
+		return $result
 	}
 }
 
 # A simplex solver, as an object for my ease of scope handling.
 # The input to the constructor is a suitably conditioned machine descriptor.
 oo::class create MachineSolver {
-	variable A n bval bsol
+	variable A n bval bsol epsilon
 
 	constructor {a} {
+		set epsilon $::epsilon
 		set A $a
 		set n [expr {[llength [lindex $A 0]] - 1}]
 		set bval inf
@@ -184,16 +189,13 @@ oo::class create MachineSolver {
 	}
 
 	method Branch a {
-		global EPS
-		set simplex [Simplex new $a [lrepeat $n 1]]
-		lassign [$simplex solve] val x
-		$simplex destroy
-        if {$val + $EPS >= $bval || $val == -inf} {
+		lassign [[Simplex new $a [lrepeat $n 1]] solve] val x
+        if {$val + $epsilon >= $bval || $val == -inf} {
 			return
 		}
 
 		foreach i [lseq {[llength $x]}] e $x {
-			if {abs($e - round($e)) > $EPS} {
+			if {abs($e - round($e)) > $epsilon} {
 				set v [expr {int($e)}]
 				set aa [list {*}$a [list {*}[lrepeat $n 0] $v]]
 				lset aa end $i 1
@@ -204,7 +206,7 @@ oo::class create MachineSolver {
 				return
 			}
 		}
-		if {$val + $EPS < $bval} {
+		if {$val + $epsilon < $bval} {
 			set bval $val
 			set bsol [lmap xx $x {expr {round($xx)}}]
 		}
@@ -212,39 +214,37 @@ oo::class create MachineSolver {
 
 	method solve {} {
 		my Branch $A
-		return [expr {round($bval)}]
+		set result [expr {round($bval)}]
+		[self] destroy
+		return $result
 	}
-}
 
-# This handles conditioning the machine descriptor
-proc solve-machine {m} {
-	lassign $m - - - sch p jol
-	set n [llength $jol]
-	set A [lrepeat [expr {2 * $n + [llength $p]}] [lrepeat [expr {[llength $p] + 1}] 0]]
-	foreach i [lseq {[llength $p]}] {
-		lset A [expr {[llength $A] - $i - 1}] $i -1
-		foreach e [lindex $sch $i] {
-			lset A $e $i 1
-			lset A [expr {$e + $n}] $i -1
+	# This handles conditioning the machine descriptor
+	self method solve-machine {m} {
+		lassign $m - - - sch p jol
+		set n [llength $jol]
+		set p [llength $p]
+		set A [lrepeat [expr {2 * $n + $p}] [lrepeat [expr {$p + 1}] 0]]
+		foreach i [lseq {$p}] {
+			lset A [expr {[llength $A] - $i - 1}] $i -1
+			foreach e [lindex $sch $i] {
+				lset A $e $i 1
+				lset A [expr {$e + $n}] $i -1
+			}
 		}
-	}
-	foreach i [lseq {$n}] j $jol {
-		lset A $i end $j
-		lset A [expr {$i + $n}] end [expr {-$j}]
-	}
-	set solver [MachineSolver new $A]
-	try {
-		return [$solver solve]
-	} finally {
-		$solver destroy
+		foreach i [lseq {$n}] j $jol {
+			lset A $i end $j
+			lset A [expr {$i + $n}] end [expr {-$j}]
+		}
+		return [[MachineSolver new $A] solve]
 	}
 }
 
 # Extend everything over the whole problem set
-proc problem {machines} {
-	tcl::mathop::+ {*}[lmap m $machines {
-		solve-machine $m
+proc problem {data} {
+	tcl::mathop::+ {*}[lmap m [parse-data $data] {
+		MachineSolver solve-machine $m
 	}]
 }
 
-puts [problem [parse-data [readfile [lindex $argv 0]]]]
+puts [problem [readfile [lindex $argv 0]]]
