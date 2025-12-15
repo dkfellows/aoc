@@ -60,46 +60,34 @@ proc relevant-subset {states source target} {
 }
 
 # Classic graph follower for a NON-LOOPING graph
-proc follow-paths {states path target} {
+proc follow-paths {states me target} {
 	global cache; # Memoisation cache; assume one fundamental graph per run
 	set count 0
-	set me [lindex $path end]
 	if {[info exists cache($me,$target)]} {
 		return $cache($me,$target)
 	}
 	foreach next [dict getdef $states $me {}] {
-		set path1 $path
-		lappend path1 $next
 		if {$next eq $target} {
 			incr count
 		} else {
-			incr count [follow-paths $states $path1 $target]
+			incr count [follow-paths $states $next $target]
 		}
 	}
 	return [set cache($me,$target) $count]
 }
 
 proc problem {states {print 0}} {
-	set rel [relevant-subset $states dac out]
-	set dacout [follow-paths $rel dac out]
-	if {$print} {puts "dac-out: [dict size $rel] -> $dacout"}
-	set rel [relevant-subset $states fft dac]
-	set fftdac [follow-paths $rel fft dac]
-	if {$print} {puts "fft-dac: [dict size $rel] -> $fftdac"}
-	set rel [relevant-subset $states svr fft]
-	set svrfft [follow-paths $rel svr fft]
-	if {$print} {puts "svr-fft: [dict size $rel] -> $svrfft"}
+	# Calculations for svr -> fft -> dac -> out
+	set svrfft [follow-paths [relevant-subset $states svr fft] svr fft]
+	set fftdac [follow-paths [relevant-subset $states fft dac] fft dac]
+	set dacout [follow-paths [relevant-subset $states dac out] dac out]
 
-	set rel [relevant-subset $states fft out]
-	set fftout [follow-paths $rel fft out]
-	if {$print} {puts "fft-out: [dict size $rel] -> $fftout"}
-	set rel [relevant-subset $states dac fft]
-	set dacfft [follow-paths $rel dac fft]
-	if {$print} {puts "dac-fft: [dict size $rel] -> $dacfft"}
-	set rel [relevant-subset $states svr dac]
-	set svrdac [follow-paths $rel svr dac]
-	if {$print} {puts "svr-dac: [dict size $rel] -> $svrdac"}
+	# Calculations for svr -> dac -> fft -> out
+	set svrdac [follow-paths [relevant-subset $states svr dac] svr dac]
+	set dacfft [follow-paths [relevant-subset $states dac fft] dac fft]
+	set fftout [follow-paths [relevant-subset $states fft out] fft out]
 
+	# Combine into final result
 	expr {$dacout * $fftdac * $svrfft + $fftout * $dacfft * $svrdac}
 }
 

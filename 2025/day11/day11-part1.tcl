@@ -15,16 +15,13 @@ proc parse-data {data} {
 }
 
 # Classic graph follower for a NON-LOOPING graph
-proc follow-paths {states {path you}} {
+proc follow-paths {states {me you}} {
+	if {$me eq "out"} {
+		return 1
+	}
 	set count 0
-	foreach next [dict get $states [lindex $path end]] {
-		if {$next eq "out"} {
-			incr count
-		} else {
-			set path1 $path
-			lappend path1 $next
-			incr count [follow-paths $states $path1]
-		}
+	foreach next [dict get $states $me] {
+		incr count [follow-paths $states $next]
 	}
 	return $count
 }
