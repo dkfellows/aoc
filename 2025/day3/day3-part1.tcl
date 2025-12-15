@@ -10,8 +10,8 @@ proc readfile {name} {
 proc max-joltage-battery {batteries} {
 	set nb [llength [set batteries [split $batteries ""]]]
 	set max 0
-	foreach i1 [lseq [llength $batteries]] {
-		foreach i2 [lseq [expr {$i1 + 1}] .. [expr {$nb - 1}]] {
+	foreach i1 [lseq {[llength $batteries]}] {
+		foreach i2 [lseq {$i1 + 1} .. {$nb - 1}] {
 			set n [lindex $batteries $i1][lindex $batteries $i2]
 			if {$n > $max} {set max $n}
 		}

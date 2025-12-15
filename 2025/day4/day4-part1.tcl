@@ -31,8 +31,8 @@ proc movable-at {data x y} {
 # Count how many removals of paper rolls are possible
 proc count-movables {data} {
 	set count 0
-	foreach x [lseq [llength $data]] {
-		foreach y [lseq [llength [lindex $data $x]]] {
+	foreach x [lseq {[llength $data]}] {
+		foreach y [lseq {[llength [lindex $data $x]]}] {
 			incr count [movable-at $data $x $y]
 		}
 	}

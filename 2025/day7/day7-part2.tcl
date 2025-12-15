@@ -11,7 +11,7 @@ proc beam-splitting-paths {data} {
 	# The number of (potential) tachyon beams proceeding in a particular column
 	set beams [lrepeat [llength [lindex $manifold 0]] 0]
 	foreach line $manifold {
-		foreach col $line idx [lseq [llength $line]] {
+		foreach col $line idx [lseq {[llength $line]}] {
 			switch $col {
 				S {
 					lset beams $idx 1

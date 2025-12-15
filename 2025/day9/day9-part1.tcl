@@ -13,7 +13,7 @@ proc max-area {data} {
 		lassign $a x1 y1
 		foreach b $coords {
 			lassign $b x2 y2
-			set area [expr {(abs($x1-$x2)+1) * (abs($y1-$y2)+1)}]
+			set area [expr {(abs($x1 - $x2) + 1) * (abs($y1 - $y2) + 1)}]
 			if {$area > $max} {set max $area}
 		}
 	}

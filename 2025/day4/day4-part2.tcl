@@ -34,8 +34,8 @@ proc count-iter-removed {data} {
 	while 1 {
 		# Find what to remove
 		set toRemove {}
-		foreach x [lseq [llength $data]] {
-			foreach y [lseq [llength [lindex $data $x]]] {
+		foreach x [lseq {[llength $data]}] {
+			foreach y [lseq {[llength [lindex $data $x]]}] {
 				if {[movable-at $data $x $y]} {
 					lappend toRemove $x $y
 				}

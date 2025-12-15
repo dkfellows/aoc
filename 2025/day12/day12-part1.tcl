@@ -16,8 +16,8 @@ proc parse-data {data} {
 	foreach line [split [string trim [lindex $paras end]] \n] {
 		scan [lindex $line 0] %dx%d: x y
 		set selector {}
-		foreach p [set ps [lrange $line 1 end]] i [lseq [llength $ps]] {
-			foreach _ [lseq $p] {lappend selector $i}
+		foreach p [set ps [lrange $line 1 end]] i [lseq {[llength $ps]}] {
+			lappend selector {*}[lrepeat $p $i]
 		}
 		lappend config $x $y $selector
 	}

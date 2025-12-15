@@ -12,7 +12,7 @@ proc beam-splitting-splits {data} {
 	set beams [lrepeat [llength [lindex $manifold 0]] no]
 	set count 0
 	foreach line $manifold {
-		foreach col $line idx [lseq [llength $line]] {
+		foreach col $line idx [lseq {[llength $line]}] {
 			switch $col {
 				S {
 					lset beams $idx yes

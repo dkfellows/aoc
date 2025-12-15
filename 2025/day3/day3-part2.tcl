@@ -11,10 +11,10 @@ proc max-joltage-battery {batteries {select 12}} {
 	set nb [llength [set b [split $batteries ""]]]
 	set max {}
 	set offset 0
-	foreach pos [lseq $select] {
+	foreach pos [lseq {$select}] {
 		# Find the earlist max value in the valid subrange window
 		set maxv -1
-		foreach i [lseq $offset .. [expr {$nb - $select + $pos}]] {
+		foreach i [lseq {$offset} .. {$nb - $select + $pos}] {
 			set v [lindex $b $i]
 			if {$v > $maxv} {
 				set offset $i

@@ -11,7 +11,7 @@ proc op-cols {data} {
 	set grandTotal 0
 	# Get line length, suspiciously
 	set strlen [tcl::mathfunc::max {*}[lmap line $lines {string length $line}]]
-	foreach index [lseq $strlen .. 0] {
+	foreach index [lseq {$strlen} .. 0] {
 		# Pick out the column of characters
 		set column [lmap line $lines {string index $line $index}]
 		# Empty columns reset for the next problem

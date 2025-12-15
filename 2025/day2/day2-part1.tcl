@@ -15,7 +15,7 @@ proc aoc::is-invalid {id} {
 proc aoc::invalids-range {range} {
 	lassign [split [string trim $range] -] from to
 	set result {}
-	foreach n [lseq $from .. $to] {
+	foreach n [lseq {$from} .. {$to}] {
 		if {[is-invalid $n]} {
 			lappend result $n
 		}

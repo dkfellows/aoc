@@ -9,7 +9,7 @@ proc readfile {name} {
 proc op-cols {data} {
 	set lines [split [string trim $data \n] \n]
 	set grandTotal 0
-	foreach index [lseq [llength [lindex $lines end]]] {
+	foreach index [lseq {[llength [lindex $lines end]]}] {
 		# Pick out the column of words
 		set column [lmap line $lines {lindex $line $index}]
 		# Get the op and apply it

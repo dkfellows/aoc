@@ -10,19 +10,19 @@ proc circuits {data} {
 	set coords [lmap line [split [string trim $data] \n] {split $line ,}]
 
 	# Get the actions we'll be taking in the order we'll do them
-	foreach i [lseq [expr {[llength $coords] - 1}]] {
+	foreach i [lseq {[llength $coords] - 1}] {
 		lassign [lindex $coords $i] x1 y1 z1
-		foreach j [lseq [expr {$i + 1}] .. [expr {[llength $coords] - 1}]] {
+		foreach j [lseq {$i + 1} .. {[llength $coords] - 1}] {
 			lassign [lindex $coords $j] x2 y2 z2
-			lappend info $i $j [expr {sqrt(($x1-$x2)**2 + ($y1-$y2)**2 + ($z1-$z2)**2)}]
+			lappend info $i $j [expr {sqrt(($x1 - $x2)**2 + ($y1 - $y2)**2 + ($z1 - $z2)**2)}]
 		}
 	}
 	set info [lsort -stride 3 -index 2 -real $info]
 
 	# Union find algorithm
 
-	set groups [lseq [llength $coords]]
-	set uf [lseq [llength $coords]]
+	set groups [lseq {[llength $coords]}]
+	set uf [lseq {[llength $coords]}]
 	# Now make connections until we have a group of all items
 	foreach {i j -} $info {
 		# Which groups are the candidates in?

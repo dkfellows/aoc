@@ -13,7 +13,7 @@ proc aoc::day1-part2 {contents} {
 	set zeroes 0
 	foreach line [split $contents \n] {
 		if {[scan $line {%[LR]%d} dir val] != 2} continue
-		set nums [lseq $dial .. [incr dial [expr {$dir eq "L" ? -$val : $val}]]]
+		set nums [lseq {$dial} .. {[incr dial [expr {$dir eq "L" ? -$val : $val}]]}]
 		incr zeroes [+ {*}[lmap n [lrange $nums 1 end] {expr {$n % 100 == 0}}]]
 	}
 	return $zeroes
