@@ -34,10 +34,8 @@ proc check-basic-area {data} {
 		lappend pxs [string length [lindex $present 0]]
 		lappend pys [llength $present]
 	}
-	if {[llength [set pxs [lsort -unique -integer $pxs]]] != 1} {error "non-unique X size: $pxs"}
-	set px [lindex $pxs 0]
-	if {[llength [set pys [lsort -unique -integer $pys]]] != 1} {error "non-unique Y size: $pys"}
-	set py [lindex $pys 0]
+	set px [tcl::mathfunc::max {*}$pxs]
+	set py [tcl::mathfunc::max {*}$pys]
 	set definitelySucceeded [lmap {x y selector} $config i $cfgi {
 		if {[llength $selector] > ($x / $px) * ($y / $py)} continue
 		set i

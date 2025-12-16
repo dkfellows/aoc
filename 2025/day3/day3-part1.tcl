@@ -8,15 +8,10 @@ proc readfile {name} {
 
 # The dumb method
 proc max-joltage-battery {batteries} {
-	set nb [llength [set batteries [split $batteries ""]]]
-	set max 0
-	foreach i1 [lseq {[llength $batteries]}] {
-		foreach i2 [lseq {$i1 + 1} .. {$nb - 1}] {
-			set n [lindex $batteries $i1][lindex $batteries $i2]
-			if {$n > $max} {set max $n}
-		}
-	}
-	return $max
+	set batteries [split $batteries ""]
+	tcl::mathfunc::max {*}[lmap i [lseq {[llength $batteries] - 1}] {
+		string cat [lindex $batteries $i] [tcl::mathfunc::max {*}[lrange $batteries [expr {$i + 1}] end]]
+	}]
 }
 
 # Trivial lifting operation
