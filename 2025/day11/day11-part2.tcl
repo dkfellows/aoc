@@ -52,11 +52,8 @@ proc relevant-subset {states source target} {
 		set this $nextlayer
 	}
 
-	# Remove all entries not both downstream and upstream marked
-	dict map {from to} $states {
-		if {!$downstream($from) || !$upstream($from)} continue
-		set to
-	}
+	# Only return entries marked as both downstream and upstream
+	dict filter $states script {from to} {expr {$downstream($from) && $upstream($from)}}
 }
 
 # Classic graph follower for a NON-LOOPING graph
