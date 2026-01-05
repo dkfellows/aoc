@@ -16,6 +16,8 @@ This mostly requires (at least) [Tcl 9.0 (source over here)](https://github.com/
 * [Day 11](2025/day11): **Reactor** _aka_ **The Computer Devices**
 * [Day 12](2025/day12): **Christmas Tree Farm** _aka_ **The Trees! NOT THE TREES!** (Also the presents.)
 
+The days include _my_ problem inputs. If you're doing these problems, my inputs aren't necessarily your inputs, but these problem inputs do represent what I've actually tested the code with.
+
 ## Other years
 There are no previous years. I don't know if I'll ever bother to attempt them.
 
