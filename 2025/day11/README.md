@@ -1,5 +1,6 @@
 # **Reactor** _aka_ **The Computer Devices**
-Ah yes, graph theory. Easy!
+Ah yes, graph theory. Easy! Or at least it's easy if you know to filter the graph to the reachable sections (for the question you're really asking of it) and use appropriate memoisation.
+
 Note that _all_ solutions today require Tcl 9.
 ## Code
 * [`day11-part1.tcl` &mdash; The solution to the first part; small subgraph](day11-part1.tcl)

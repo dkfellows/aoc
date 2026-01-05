@@ -1,5 +1,8 @@
 # **Playground** _aka_ **The Christmas Lights**
-If you've done one Union-Find, you've done them all. (This is the first of the _harder_ problems.)
+If you've done one Union-Find, you've done them all. The slow part is actually computing all the distances and sorting them to get the order of links to form; it could be optimised further (e.g., using an octtree and only computing values that are "relatively close", which might let you generate them on the fly with a coroutine), but it will do.
+
+> [!NOTE]
+> This is the first of the _harder_ problems.
 
 Note that _all_ solutions today require Tcl 9.
 ## Code
